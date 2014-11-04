@@ -306,32 +306,30 @@ namespace Xerath
 
         private static void UseSpells(bool useQ, bool useW, bool useE)
         {
-            var qTarget = SimpleTs.GetTarget(Q.ChargedMaxRange, SimpleTs.DamageType.Magical);
-            var wTarget = SimpleTs.GetTarget(W.Range + W.Width * 0.5f, SimpleTs.DamageType.Magical);
-            var eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero qTarget = SimpleTs.GetTarget(Q.ChargedMaxRange, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero wTarget = SimpleTs.GetTarget(W.Range + W.Width*0.5f, SimpleTs.DamageType.Magical);
+            Obj_AI_Hero eTarget = SimpleTs.GetTarget(E.Range, SimpleTs.DamageType.Magical);
 
-            if (eTarget != null && useE && E.IsReady())
-            {
-                if (Player.Distance(eTarget) < E.Range * 0.4f)
+            if (eTarget != null && useE && E.IsReady()) {
+                if (Player.Distance(eTarget) < E.Range && E.GetPrediction(eTarget).Hitchance >= HitChance.High)
                     E.Cast(eTarget);
-                else if ((!useW || !W.IsReady()))
-                    E.Cast(eTarget);
+                else if ((!useW || !W.IsReady())) {
+                    if (E.GetPrediction(eTarget).Hitchance >= HitChance.High)
+                        E.Cast(eTarget);
+                }
             }
 
-            if (useQ && Q.IsReady())
-            {
-                if (Q.IsCharging)
-                {
-                    Q.Cast(qTarget, false, false);
+            if (useQ && Q.IsReady()) {
+                if (Q.IsCharging && Q.GetPrediction(qTarget).Hitchance >= HitChance.High) {
+                    Q.Cast(qTarget, usePackets());
                 }
-                else if (qTarget != null && (!useW || !W.IsReady() || Player.Distance(qTarget) > W.Range))
-                {
+                else if (qTarget != null && (!useW || !W.IsReady() || Player.Distance(qTarget) > W.Range)) {
                     Q.StartCharging();
                 }
             }
 
-            if (wTarget != null && useW && W.IsReady())
-                W.Cast(wTarget, false, true);
+            if (wTarget != null && useW && W.IsReady() && W.GetPrediction(wTarget).Hitchance >= HitChance.High)
+                W.Cast(wTarget, usePackets(), true);
         }
 
         private static void WhileCastingR()
